@@ -1,0 +1,228 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Around the World in 8 Beats</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .question {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+        }
+        .options button {
+            margin: 5px 0;
+            padding: 10px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        .scoreboard {
+            margin-top: 20px;
+        }
+        .language-selector {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="language-selector">
+        <label for="language">Choose Language:</label>
+        <select id="language" onchange="changeLanguage()">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+        </select>
+    </div>
+    <div class="container">
+        <h1 id="title">Around the World in 8 Beats</h1>
+        <div id="question-container">
+            <div class="question" id="question">Loading...</div>
+            <div class="options" id="options"></div>
+        </div>
+        <div class="scoreboard">
+            <div id="score">Score: 0</div>
+            <div id="timer">Time: 30</div>
+        </div>
+    </div>
+
+    <script>
+        const questions = {
+            en: [
+                {
+                    question: "Which country has the most time zones?",
+                    options: ["Russia", "USA", "China", "France"],
+                    answer: "France",
+                    fact: "France has 12 time zones due to its territories around the world."
+                },
+                {
+                    question: "What is the capital of Kazakhstan?",
+                    options: ["Almaty", "Astana", "Nur-Sultan", "Shymkent"],
+                    answer: "Nur-Sultan",
+                    fact: "Nur-Sultan, formerly known as Astana, is the capital of Kazakhstan."
+                },
+                {
+                    question: "Which country is the origin of reggae music?",
+                    options: ["Jamaica", "USA", "Brazil", "Nigeria"],
+                    answer: "Jamaica",
+                    fact: "Reggae music originated in Jamaica in the late 1960s."
+                },
+                {
+                    question: "Which instrument is traditionally used in Indian classical music?",
+                    options: ["Guitar", "Sitar", "Piano", "Violin"],
+                    answer: "Sitar",
+                    fact: "The sitar is a traditional string instrument used in Indian classical music."
+                }
+            ],
+            es: [
+                {
+                    question: "¿Qué país tiene más zonas horarias?",
+                    options: ["Rusia", "EE.UU.", "China", "Francia"],
+                    answer: "Francia",
+                    fact: "Francia tiene 12 zonas horarias debido a sus territorios en todo el mundo."
+                },
+                {
+                    question: "¿Cuál es la capital de Kazajistán?",
+                    options: ["Almaty", "Astana", "Nur-Sultan", "Shymkent"],
+                    answer: "Nur-Sultan",
+                    fact: "Nur-Sultan, anteriormente conocida como Astana, es la capital de Kazajistán."
+                },
+                {
+                    question: "¿Qué país es el origen de la música reggae?",
+                    options: ["Jamaica", "EE.UU.", "Brasil", "Nigeria"],
+                    answer: "Jamaica",
+                    fact: "La música reggae se originó en Jamaica a finales de los años 60."
+                },
+                {
+                    question: "¿Qué instrumento se utiliza tradicionalmente en la música clásica india?",
+                    options: ["Guitarra", "Sitar", "Piano", "Violín"],
+                    answer: "Sitar",
+                    fact: "El sitar es un instrumento de cuerda tradicional utilizado en la música clásica india."
+                }
+            ],
+            fr: [
+                {
+                    question: "Quel pays a le plus de fuseaux horaires?",
+                    options: ["Russie", "États-Unis", "Chine", "France"],
+                    answer: "France",
+                    fact: "La France a 12 fuseaux horaires en raison de ses territoires à travers le monde."
+                },
+                {
+                    question: "Quelle est la capitale du Kazakhstan?",
+                    options: ["Almaty", "Astana", "Nur-Sultan", "Shymkent"],
+                    answer: "Nur-Sultan",
+                    fact: "Nur-Sultan, anciennement connue sous le nom d'Astana, est la capitale du Kazakhstan."
+                },
+                {
+                    question: "Quel pays est à l'origine de la musique reggae?",
+                    options: ["Jamaïque", "États-Unis", "Brésil", "Nigéria"],
+                    answer: "Jamaïque",
+                    fact: "La musique reggae est née en Jamaïque à la fin des années 1960."
+                },
+                {
+                    question: "Quel instrument est traditionnellement utilisé dans la musique classique indienne?",
+                    options: ["Guitare", "Sitar", "Piano", "Violon"],
+                    answer: "Sitar",
+                    fact: "Le sitar est un instrument à cordes traditionnel utilisé dans la musique classique indienne."
+                }
+            ]
+        };
+
+        let currentLanguage = 'en';
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timer;
+        let timeLeft = 30;
+
+        function changeLanguage() {
+            currentLanguage = document.getElementById('language').value;
+            resetGame();
+        }
+
+        function resetGame() {
+            currentQuestionIndex = 0;
+            score = 0;
+            timeLeft = 30;
+            document.getElementById('score').innerText = `Score: ${score}`;
+            document.getElementById('timer').innerText = `Time: ${timeLeft}`;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            clearInterval(timer);
+            if (currentQuestionIndex < questions[currentLanguage].length) {
+                const questionData = questions[currentLanguage][currentQuestionIndex];
+                document.getElementById('question').innerText = questionData.question;
+                const optionsContainer = document.getElementById('options');
+                optionsContainer.innerHTML = '';
+                questionData.options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.innerText = option;
+                    button.onclick = () => checkAnswer(option);
+                    optionsContainer.appendChild(button);
+                });
+                startTimer();
+            } else {
+                document.getElementById('question').innerText = 'Game Over!';
+                document.getElementById('options').innerHTML = '';
+                clearInterval(timer);
+            }
+        }
+
+        function checkAnswer(selectedOption) {
+            const questionData = questions[currentLanguage][currentQuestionIndex];
+            if (selectedOption === questionData.answer) {
+                score++;
+                alert(`Correct! ${questionData.fact}`);
+            } else {
+                alert(`Wrong! ${questionData.fact}`);
+            }
+            document.getElementById('score').innerText = `Score: ${score}`;
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function startTimer() {
+            timeLeft = 30;
+            document.getElementById('timer').innerText = `Time: ${timeLeft}`;
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').innerText = `Time: ${timeLeft}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    alert('Time is up!');
+                    currentQuestionIndex++;
+                    loadQuestion();
+                }
+            }, 1000);
+        }
+
+        window.onload = () => {
+            loadQuestion();
+        };
+    </script>
+</body>
+</html>
